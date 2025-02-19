@@ -43,6 +43,7 @@ type BudgetInput struct {
 
 type BudgetQueryInput struct {
 	Keyword string `query:"keyword"`
+	UserID  string `query:"user_id"`
 	PaginatedRequest
 }
 

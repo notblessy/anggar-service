@@ -35,7 +35,7 @@ func (r *budgetRepository) FindAll(c context.Context, query model.BudgetQueryInp
 
 	var budgets []model.Budget
 
-	qb := r.db.WithContext(c)
+	qb := r.db.WithContext(c).Where("user_id = ?", query.UserID)
 
 	if query.Keyword != "" {
 		qb = qb.Where("name ILIKE ?", "%"+query.Keyword+"%")

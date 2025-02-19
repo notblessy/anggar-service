@@ -17,29 +17,9 @@ type PaginatedRequest struct {
 	Size int  `query:"size"`
 }
 
-func (p *PaginatedRequest) pageOrDefault() int {
-	if p.Page == 0 {
-		return defaultPage
-	}
-
-	return p.Page
-}
-
-func (p *PaginatedRequest) sizeOrDefault() int {
-	if p.Size == 0 {
-		return defaultSize
-	}
-
-	return p.Size
-}
-
-func (p *PaginatedRequest) offset() int {
-	return (p.pageOrDefault() - 1) * p.sizeOrDefault()
-}
-
 func (p *PaginatedRequest) Paginated() func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Offset(p.offset()).Limit(p.sizeOrDefault())
+		return db.Offset(p.offset()).Limit(p.SizeOrDefault())
 	}
 }
 
@@ -49,6 +29,26 @@ func (p *PaginatedRequest) Sorted() string {
 	}
 
 	return p.Sort.extract()
+}
+
+func (p *PaginatedRequest) PageOrDefault() int {
+	if p.Page == 0 {
+		return defaultPage
+	}
+
+	return p.Page
+}
+
+func (p *PaginatedRequest) offset() int {
+	return (p.PageOrDefault() - 1) * p.SizeOrDefault()
+}
+
+func (p *PaginatedRequest) SizeOrDefault() int {
+	if p.Size == 0 {
+		return defaultSize
+	}
+
+	return p.Size
 }
 
 type Sort string

@@ -7,8 +7,10 @@ import (
 )
 
 type httpService struct {
-	db       *gorm.DB
-	userRepo model.UserRepository
+	db         *gorm.DB
+	userRepo   model.UserRepository
+	walletRepo model.WalletRepository
+	budgetRepo model.BudgetRepository
 }
 
 func NewHTTPService() *httpService {
@@ -21,6 +23,14 @@ func (h *httpService) RegisterPostgres(db *gorm.DB) {
 
 func (h *httpService) RegisterUserRepository(repo model.UserRepository) {
 	h.userRepo = repo
+}
+
+func (h *httpService) RegisterWalletRepository(repo model.WalletRepository) {
+	h.walletRepo = repo
+}
+
+func (h *httpService) RegisterBudgetRepository(repo model.BudgetRepository) {
+	h.budgetRepo = repo
 }
 
 func (h *httpService) Router(e *echo.Echo) {
@@ -36,6 +46,20 @@ func (h *httpService) Router(e *echo.Echo) {
 	users := v1.Group("/users")
 	users.GET("/me", h.profileHandler)
 
+	budget := v1.Group("/budgets")
+	budget.GET("/overviews", h.findBudgetOverviews)
+	budget.GET("", h.findAllBudgetHandler)
+	budget.POST("", h.createBudgetHandler)
+	budget.GET("/:id", h.findBudgetByIDHandler)
+	budget.PUT("/:id", h.updateBudgetHandler)
+	budget.DELETE("/:id", h.deleteBudgetHandler)
+
+	wallet := v1.Group("/wallets")
+	wallet.GET("", h.findAllWalletHandler)
+	wallet.POST("", h.createWalletHandler)
+	wallet.GET("/:id", h.findWalletByIDHandler)
+	wallet.PUT("/:id", h.updateWalletHandler)
+	wallet.DELETE("/:id", h.deleteWalletHandler)
 }
 
 func (h *httpService) ping(c echo.Context) error {

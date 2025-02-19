@@ -35,10 +35,14 @@ func main() {
 	e.Validator = &utils.Ghost{Validator: validator.New()}
 
 	userRepo := repository.NewUserRepository(postgres)
+	walletRepo := repository.NewWalletRepository(postgres)
+	budgetRepo := repository.NewBudgetRepository(postgres)
 
 	httpService := router.NewHTTPService()
 	httpService.RegisterPostgres(postgres)
 	httpService.RegisterUserRepository(userRepo)
+	httpService.RegisterWalletRepository(walletRepo)
+	httpService.RegisterBudgetRepository(budgetRepo)
 
 	httpService.Router(e)
 
