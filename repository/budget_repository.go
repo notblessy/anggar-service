@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/notblessy/anggar-service/model"
 	"github.com/notblessy/anggar-service/utils"
@@ -71,9 +72,49 @@ func (r *budgetRepository) FindByID(c context.Context, id int64) (model.Budget, 
 func (r *budgetRepository) Update(c context.Context, id int64, budget model.Budget) error {
 	logger := logrus.WithField("id", id).WithField("budget", utils.Dump(budget))
 
-	if err := r.db.Model(&model.Budget{}).Where("id = ?", id).Updates(budget).Error; err != nil {
+	updatedBudgt := model.Budget{
+		ID:            id,
+		UserID:        budget.UserID,
+		Name:          budget.Name,
+		Amount:        budget.Amount,
+		StartDate:     budget.StartDate,
+		EndDate:       budget.EndDate,
+		AutoRenew:     budget.AutoRenew,
+		RenewalPeriod: budget.RenewalPeriod,
+		CreatedAt:     budget.CreatedAt,
+		UpdatedAt:     time.Now(),
+	}
+
+	trx := r.db.WithContext(c).Begin()
+
+	if err := trx.Model(&model.Budget{}).Where("id = ?", id).Updates(updatedBudgt).Error; err != nil {
 		logger.Error(err)
+		trx.Rollback()
 		return err
+	}
+
+	if len(budget.BudgetCategories) > 0 {
+		if err := trx.Where("budget_id = ?", id).Delete(&model.BudgetCategory{}).Error; err != nil {
+			logger.Error(err)
+			trx.Rollback()
+			return err
+		}
+
+		for i := range budget.BudgetCategories {
+			budget.BudgetCategories[i].BudgetID = id
+		}
+
+		if err := trx.Create(&budget.BudgetCategories).Error; err != nil {
+			logger.Error(err)
+			trx.Rollback()
+			return err
+		}
+	} else {
+		if err := trx.Where("budget_id = ?", id).Delete(&model.BudgetCategory{}).Error; err != nil {
+			logger.Error(err)
+			trx.Rollback()
+			return err
+		}
 	}
 
 	return nil

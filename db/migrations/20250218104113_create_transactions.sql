@@ -3,7 +3,6 @@ CREATE TABLE transactions (
     id BIGSERIAL PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
     wallet_id BIGINT,
-    budget_id BIGINT,
     category VARCHAR(255) NOT NULL,
     transaction_type VARCHAR(32) NOT NULL,
     description TEXT,

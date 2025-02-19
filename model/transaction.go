@@ -27,7 +27,6 @@ type Transaction struct {
 	ID              int64           `json:"id"`
 	UserID          string          `json:"user_id"`
 	WalletID        int64           `json:"wallet_id"`
-	BudgetID        int64           `json:"budget_id"`
 	Category        string          `json:"category"`
 	TransactionType string          `json:"transaction_type"`
 	Description     string          `json:"description"`
