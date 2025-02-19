@@ -18,27 +18,29 @@ type BudgetRepository interface {
 }
 
 type Budget struct {
-	ID            int64           `json:"id"`
-	UserID        string          `json:"user_id"`
-	Name          string          `json:"name"`
-	Amount        decimal.Decimal `json:"amount"`
-	StartDate     string          `json:"start_date"`
-	EndDate       string          `json:"end_date"`
-	AutoRenew     bool            `json:"auto_renew"`
-	RenewalPeriod string          `json:"renewal_period"`
-	CreatedAt     time.Time       `json:"created_at"`
-	UpdatedAt     time.Time       `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt  `json:"deleted_at"`
+	ID               int64            `json:"id"`
+	UserID           string           `json:"user_id"`
+	Name             string           `json:"name"`
+	Amount           decimal.Decimal  `json:"amount"`
+	StartDate        string           `json:"start_date"`
+	EndDate          string           `json:"end_date"`
+	AutoRenew        bool             `json:"auto_renew"`
+	RenewalPeriod    string           `json:"renewal_period"`
+	CreatedAt        time.Time        `json:"created_at"`
+	UpdatedAt        time.Time        `json:"updated_at"`
+	DeletedAt        gorm.DeletedAt   `json:"deleted_at"`
+	BudgetCategories []BudgetCategory `json:"budget_categories"`
 }
 
 type BudgetInput struct {
-	UserID        string          `json:"user_id"`
-	Name          string          `json:"name"`
-	Amount        decimal.Decimal `json:"amount"`
-	StartDate     string          `json:"start_date"`
-	EndDate       string          `json:"end_date"`
-	AutoRenew     bool            `json:"auto_renew"`
-	RenewalPeriod string          `json:"renewal_period"`
+	UserID           string           `json:"user_id"`
+	Name             string           `json:"name"`
+	Amount           decimal.Decimal  `json:"amount"`
+	StartDate        string           `json:"start_date"`
+	EndDate          string           `json:"end_date"`
+	AutoRenew        bool             `json:"auto_renew"`
+	RenewalPeriod    string           `json:"renewal_period"`
+	BudgetCategories []BudgetCategory `json:"budget_categories"`
 }
 
 type BudgetQueryInput struct {
@@ -52,4 +54,13 @@ type BudgetOverview struct {
 	TotalAmountTransaction decimal.Decimal `json:"total_amount_transaction"`
 	Leftout                decimal.Decimal `json:"leftout"`
 	Progress               decimal.Decimal `json:"progress"`
+}
+
+type BudgetCategory struct {
+	ID        int64     `json:"id"`
+	BudgetID  int64     `json:"budget_id"`
+	Category  string    `json:"category"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt gorm.DeletedAt
 }

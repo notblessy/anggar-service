@@ -50,5 +50,6 @@ type TransactionInput struct {
 
 type TransactionQueryInput struct {
 	Keyword string `query:"keyword"`
+	UserID  string `query:"user_id"`
 	PaginatedRequest
 }

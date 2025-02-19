@@ -111,7 +111,8 @@ func (r *budgetRepository) FindOverviews(c context.Context, userID string) ([]mo
 			budget.deleted_at, 
 			COALESCE(SUM(transactions.amount), 0) AS total_amount_transaction
 		`).
-		Joins("LEFT JOIN transactions ON transactions.budget_id = budget.id").
+		Joins("LEFT JOIN budget_categories ON budget.id = budget_categories.budget_id").
+		Joins("LEFT JOIN transactions ON transactions.category = budget_categories.category").
 		Where("budget.user_id = ?", userID).
 		Group("budget.id").
 		Scan(&overviews).Error; err != nil {
