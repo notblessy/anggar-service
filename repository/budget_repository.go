@@ -20,15 +20,35 @@ func NewBudgetRepository(db *gorm.DB) model.BudgetRepository {
 	return &budgetRepository{db}
 }
 
-func (r *budgetRepository) Create(c context.Context, budget *model.Budget) error {
+func (r *budgetRepository) Create(c context.Context, budget model.BudgetInput) (model.Budget, error) {
 	logger := logrus.WithField("budget", utils.Dump(budget))
 
-	if err := r.db.Create(budget).Error; err != nil {
+	budgetCreate := budget.ToBudget()
+
+	tx := r.db.WithContext(c).Begin()
+
+	if err := tx.Create(&budgetCreate).Error; err != nil {
 		logger.Error(err)
-		return err
+		tx.Rollback()
+		return model.Budget{}, err
 	}
 
-	return nil
+	var budgetCategories []model.BudgetCategory
+
+	for _, category := range budget.CategoryIDs {
+		budgetCategories = append(budgetCategories, model.BudgetCategory{
+			BudgetID: budgetCreate.ID,
+			Category: category,
+		})
+	}
+
+	if err := tx.Create(&budgetCategories).Error; err != nil {
+		logger.Error(err)
+		tx.Rollback()
+		return model.Budget{}, err
+	}
+
+	return budgetCreate, nil
 }
 
 func (r *budgetRepository) FindAll(c context.Context, query model.BudgetQueryInput) ([]model.Budget, int64, error) {

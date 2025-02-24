@@ -9,7 +9,7 @@ import (
 )
 
 type BudgetRepository interface {
-	Create(ctx context.Context, budget *Budget) error
+	Create(ctx context.Context, budget BudgetInput) (Budget, error)
 	FindAll(ctx context.Context, query BudgetQueryInput) ([]Budget, int64, error)
 	FindByID(ctx context.Context, id int64) (Budget, error)
 	Update(ctx context.Context, id int64, budget Budget) error
@@ -33,14 +33,26 @@ type Budget struct {
 }
 
 type BudgetInput struct {
-	UserID           string           `json:"user_id"`
-	Name             string           `json:"name"`
-	Amount           decimal.Decimal  `json:"amount"`
-	StartDate        string           `json:"start_date"`
-	EndDate          string           `json:"end_date"`
-	AutoRenew        bool             `json:"auto_renew"`
-	RenewalPeriod    string           `json:"renewal_period"`
-	BudgetCategories []BudgetCategory `json:"budget_categories"`
+	UserID        string          `json:"user_id"`
+	Name          string          `json:"name"`
+	Amount        decimal.Decimal `json:"amount"`
+	StartDate     string          `json:"start_date"`
+	EndDate       string          `json:"end_date"`
+	AutoRenew     bool            `json:"auto_renew"`
+	RenewalPeriod string          `json:"renewal_period"`
+	CategoryIDs   []string        `json:"budget_categories"`
+}
+
+func (bi *BudgetInput) ToBudget() Budget {
+	return Budget{
+		UserID:        bi.UserID,
+		Name:          bi.Name,
+		Amount:        bi.Amount,
+		StartDate:     bi.StartDate,
+		EndDate:       bi.EndDate,
+		AutoRenew:     bi.AutoRenew,
+		RenewalPeriod: bi.RenewalPeriod,
+	}
 }
 
 type BudgetQueryInput struct {

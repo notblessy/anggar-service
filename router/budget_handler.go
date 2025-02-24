@@ -63,7 +63,7 @@ func (h *httpService) findAllBudgetHandler(c echo.Context) error {
 func (h *httpService) createBudgetHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
-	var budget model.Budget
+	var budget model.BudgetInput
 
 	if err := c.Bind(&budget); err != nil {
 		logger.Errorf("Error parsing request: %v", err)
@@ -78,14 +78,15 @@ func (h *httpService) createBudgetHandler(c echo.Context) error {
 
 	budget.UserID = session.ID
 
-	if err := h.budgetRepo.Create(c.Request().Context(), &budget); err != nil {
+	result, err := h.budgetRepo.Create(c.Request().Context(), budget)
+	if err != nil {
 		logger.Errorf("Error creating budget: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusCreated, response{
 		Success: true,
-		Data:    budget,
+		Data:    result,
 	})
 }
 
