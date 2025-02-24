@@ -97,3 +97,18 @@ func (r *walletRepository) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (r *walletRepository) Option(ctx context.Context, userID string) ([]model.Wallet, error) {
+	logger := logrus.WithField("user_id", userID)
+
+	var wallets []model.Wallet
+
+	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&wallets).Error
+
+	if err != nil {
+		logger.Error(err)
+		return nil, err
+	}
+
+	return wallets, nil
+}

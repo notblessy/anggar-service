@@ -60,6 +60,7 @@ func (h *httpService) Router(e *echo.Echo) {
 	wallet.GET("/:id", h.findWalletByIDHandler)
 	wallet.PUT("/:id", h.updateWalletHandler)
 	wallet.DELETE("/:id", h.deleteWalletHandler)
+	wallet.GET("/options", h.findWalletOptionHandler)
 }
 
 func (h *httpService) ping(c echo.Context) error {

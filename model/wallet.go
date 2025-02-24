@@ -13,6 +13,7 @@ type WalletRepository interface {
 	FindByID(c context.Context, id int64) (Wallet, error)
 	Update(c context.Context, id int64, wallet Wallet) error
 	Delete(c context.Context, id int64) error
+	Option(c context.Context, userID string) ([]Wallet, error)
 }
 
 type Wallet struct {

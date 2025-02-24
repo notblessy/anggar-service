@@ -146,3 +146,21 @@ func (h *httpService) deleteWalletHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response{Success: true})
 }
+
+func (h *httpService) findWalletOptionHandler(c echo.Context) error {
+	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
+
+	session, err := authSession(c)
+	if err != nil {
+		logger.Errorf("Error getting session: %v", err)
+		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
+	}
+
+	options, err := h.walletRepo.Option(c.Request().Context(), session.ID)
+	if err != nil {
+		logger.Errorf("Error getting wallet options: %v", err)
+		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, response{Success: true, Data: options})
+}
