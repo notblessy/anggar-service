@@ -78,7 +78,6 @@ func (s Sort) extract() string {
 	}
 
 	var sortResults []string
-
 	splittedSorts := strings.Split(sorts, ",")
 
 	for _, sort := range splittedSorts {
@@ -87,8 +86,6 @@ func (s Sort) extract() string {
 		} else {
 			sortResults = append(sortResults, sort+" ASC")
 		}
-
-		sortResults = append(sortResults, sort)
 	}
 
 	return strings.Join(sortResults, ", ")

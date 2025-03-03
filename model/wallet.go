@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type WalletRepository interface {
@@ -23,7 +24,7 @@ type Wallet struct {
 	Balance   decimal.Decimal `json:"balance"`
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
-	DeletedAt string          `json:"deleted_at"`
+	DeletedAt gorm.DeletedAt  `json:"deleted_at"`
 }
 
 type WalletInput struct {
