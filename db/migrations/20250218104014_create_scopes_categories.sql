@@ -1,13 +1,13 @@
 -- migrate:up
-CREATE TABLE budget_categories (
+CREATE TABLE scope_categories (
     id BIGSERIAL PRIMARY KEY,
-    budget_id BIGINT,
+    scope_id BIGINT,
     category VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
-    CONSTRAINT budget_categories_budget_id_fk FOREIGN KEY (budget_id) REFERENCES budgets(id)
+    CONSTRAINT scope_categories_scope_id_fk FOREIGN KEY (scope_id) REFERENCES scopes(id)
 );
 
 -- migrate:down
-DROP TABLE IF EXISTS budget_categories;
+DROP TABLE IF EXISTS scope_categories;

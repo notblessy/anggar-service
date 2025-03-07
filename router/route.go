@@ -7,10 +7,11 @@ import (
 )
 
 type httpService struct {
-	db         *gorm.DB
-	userRepo   model.UserRepository
-	walletRepo model.WalletRepository
-	budgetRepo model.BudgetRepository
+	db              *gorm.DB
+	userRepo        model.UserRepository
+	walletRepo      model.WalletRepository
+	scopeRepo       model.ScopeRepository
+	transactionRepo model.TransactionRepository
 }
 
 func NewHTTPService() *httpService {
@@ -29,8 +30,12 @@ func (h *httpService) RegisterWalletRepository(repo model.WalletRepository) {
 	h.walletRepo = repo
 }
 
-func (h *httpService) RegisterBudgetRepository(repo model.BudgetRepository) {
-	h.budgetRepo = repo
+func (h *httpService) RegisterScopeRepository(repo model.ScopeRepository) {
+	h.scopeRepo = repo
+}
+
+func (h *httpService) RegisterTransactionRepository(repo model.TransactionRepository) {
+	h.transactionRepo = repo
 }
 
 func (h *httpService) Router(e *echo.Echo) {
@@ -46,13 +51,13 @@ func (h *httpService) Router(e *echo.Echo) {
 	users := v1.Group("/users")
 	users.GET("/me", h.profileHandler)
 
-	budget := v1.Group("/budgets")
-	budget.GET("/overviews", h.findBudgetOverviews)
-	budget.GET("", h.findAllBudgetHandler)
-	budget.POST("", h.createBudgetHandler)
-	budget.GET("/:id", h.findBudgetByIDHandler)
-	budget.PUT("/:id", h.updateBudgetHandler)
-	budget.DELETE("/:id", h.deleteBudgetHandler)
+	scope := v1.Group("/scopes")
+	scope.GET("/overviews", h.findScopeOverviews)
+	scope.GET("", h.findAllScopeHandler)
+	scope.POST("", h.createScopeHandler)
+	scope.GET("/:id", h.findScopeByIDHandler)
+	scope.PUT("/:id", h.updateScopeHandler)
+	scope.DELETE("/:id", h.deleteScopeHandler)
 
 	wallet := v1.Group("/wallets")
 	wallet.GET("", h.findAllWalletHandler)
@@ -61,6 +66,13 @@ func (h *httpService) Router(e *echo.Echo) {
 	wallet.PUT("/:id", h.updateWalletHandler)
 	wallet.DELETE("/:id", h.deleteWalletHandler)
 	wallet.GET("/options", h.findWalletOptionHandler)
+
+	transaction := v1.Group("/transactions")
+	transaction.GET("", h.findAllTransactionHandler)
+	transaction.POST("", h.createTransactionHandler)
+	transaction.GET("/:id", h.findTransactionByIDHandler)
+	transaction.PUT("/:id", h.updateTransactionHandler)
+	transaction.DELETE("/:id", h.deleteTransactionHandler)
 }
 
 func (h *httpService) ping(c echo.Context) error {

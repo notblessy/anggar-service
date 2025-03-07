@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *httpService) findBudgetOverviews(c echo.Context) error {
+func (h *httpService) findScopeOverviews(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
 	session, err := authSession(c)
@@ -18,7 +18,7 @@ func (h *httpService) findBudgetOverviews(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
 	}
 
-	overviews, err := h.budgetRepo.FindOverviews(c.Request().Context(), session.ID)
+	overviews, err := h.scopeRepo.FindOverviews(c.Request().Context(), session.ID)
 	if err != nil {
 		logger.Errorf("Error getting overviews: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
@@ -30,10 +30,10 @@ func (h *httpService) findBudgetOverviews(c echo.Context) error {
 	})
 }
 
-func (h *httpService) findAllBudgetHandler(c echo.Context) error {
+func (h *httpService) findAllScopeHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
-	var query model.BudgetQueryInput
+	var query model.ScopeQueryInput
 
 	if err := c.Bind(&query); err != nil {
 		logger.Errorf("Error parsing request: %v", err)
@@ -48,24 +48,24 @@ func (h *httpService) findAllBudgetHandler(c echo.Context) error {
 
 	query.UserID = session.ID
 
-	budgets, total, err := h.budgetRepo.FindAll(c.Request().Context(), query)
+	scopes, total, err := h.scopeRepo.FindAll(c.Request().Context(), query)
 	if err != nil {
-		logger.Errorf("Error getting budgets: %v", err)
+		logger.Errorf("Error getting scopes: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, response{
 		Success: true,
-		Data:    withPaging(budgets, total, query.PageOrDefault(), query.SizeOrDefault()),
+		Data:    withPaging(scopes, total, query.PageOrDefault(), query.SizeOrDefault()),
 	})
 }
 
-func (h *httpService) createBudgetHandler(c echo.Context) error {
+func (h *httpService) createScopeHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
-	var budget model.BudgetInput
+	var scope model.ScopeInput
 
-	if err := c.Bind(&budget); err != nil {
+	if err := c.Bind(&scope); err != nil {
 		logger.Errorf("Error parsing request: %v", err)
 		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
 	}
@@ -76,11 +76,11 @@ func (h *httpService) createBudgetHandler(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
 	}
 
-	budget.UserID = session.ID
+	scope.UserID = session.ID
 
-	result, err := h.budgetRepo.Create(c.Request().Context(), budget)
+	result, err := h.scopeRepo.Create(c.Request().Context(), scope)
 	if err != nil {
-		logger.Errorf("Error creating budget: %v", err)
+		logger.Errorf("Error creating scope: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 
@@ -90,7 +90,7 @@ func (h *httpService) createBudgetHandler(c echo.Context) error {
 	})
 }
 
-func (h *httpService) findBudgetByIDHandler(c echo.Context) error {
+func (h *httpService) findScopeByIDHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
 	id := utils.ParseID(c.Param("id"))
@@ -101,30 +101,30 @@ func (h *httpService) findBudgetByIDHandler(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
 	}
 
-	budget, err := h.budgetRepo.FindByID(c.Request().Context(), id)
+	scope, err := h.scopeRepo.FindByID(c.Request().Context(), id)
 	if err != nil {
-		logger.Errorf("Error getting budget: %v", err)
+		logger.Errorf("Error getting scope: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 
-	if budget.UserID != session.ID {
+	if scope.UserID != session.ID {
 		return c.JSON(http.StatusForbidden, response{Message: "forbidden"})
 	}
 
 	return c.JSON(http.StatusOK, response{
 		Success: true,
-		Data:    budget,
+		Data:    scope,
 	})
 }
 
-func (h *httpService) updateBudgetHandler(c echo.Context) error {
+func (h *httpService) updateScopeHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
 	id := utils.ParseID(c.Param("id"))
 
-	var budget model.Budget
+	var scope model.Scope
 
-	if err := c.Bind(&budget); err != nil {
+	if err := c.Bind(&scope); err != nil {
 		logger.Errorf("Error parsing request: %v", err)
 		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
 	}
@@ -135,17 +135,17 @@ func (h *httpService) updateBudgetHandler(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
 	}
 
-	budget.UserID = session.ID
+	scope.UserID = session.ID
 
-	if err := h.budgetRepo.Update(c.Request().Context(), id, budget); err != nil {
-		logger.Errorf("Error updating budget: %v", err)
+	if err := h.scopeRepo.Update(c.Request().Context(), id, scope); err != nil {
+		logger.Errorf("Error updating scope: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, response{Success: true})
 }
 
-func (h *httpService) deleteBudgetHandler(c echo.Context) error {
+func (h *httpService) deleteScopeHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
 	id := utils.ParseID(c.Param("id"))
@@ -156,18 +156,18 @@ func (h *httpService) deleteBudgetHandler(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
 	}
 
-	budget, err := h.budgetRepo.FindByID(c.Request().Context(), id)
+	scope, err := h.scopeRepo.FindByID(c.Request().Context(), id)
 	if err != nil {
-		logger.Errorf("Error getting budget: %v", err)
+		logger.Errorf("Error getting scope: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 
-	if budget.UserID != session.ID {
+	if scope.UserID != session.ID {
 		return c.JSON(http.StatusForbidden, response{Message: "forbidden"})
 	}
 
-	if err := h.budgetRepo.Delete(c.Request().Context(), id); err != nil {
-		logger.Errorf("Error deleting budget: %v", err)
+	if err := h.scopeRepo.Delete(c.Request().Context(), id); err != nil {
+		logger.Errorf("Error deleting scope: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 

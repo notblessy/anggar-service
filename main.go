@@ -36,13 +36,15 @@ func main() {
 
 	userRepo := repository.NewUserRepository(postgres)
 	walletRepo := repository.NewWalletRepository(postgres)
-	budgetRepo := repository.NewBudgetRepository(postgres)
+	budgetRepo := repository.NewScopeRepository(postgres)
+	transactionRepo := repository.NewTransactionRepository(postgres)
 
 	httpService := router.NewHTTPService()
 	httpService.RegisterPostgres(postgres)
 	httpService.RegisterUserRepository(userRepo)
 	httpService.RegisterWalletRepository(walletRepo)
-	httpService.RegisterBudgetRepository(budgetRepo)
+	httpService.RegisterScopeRepository(budgetRepo)
+	httpService.RegisterTransactionRepository(transactionRepo)
 
 	httpService.Router(e)
 
