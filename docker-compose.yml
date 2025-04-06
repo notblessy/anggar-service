@@ -4,7 +4,7 @@ services:
     tty: true
     build: .
     ports:
-      - 3400:3400
+      - 3000:3000
     restart: on-failure
     volumes:
       - .:/app
