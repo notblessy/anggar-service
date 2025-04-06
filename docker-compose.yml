@@ -1,0 +1,15 @@
+services:
+  app:
+    container_name: caputalsight-api
+    tty: true
+    build: .
+    ports:
+      - 3400:3400
+    restart: on-failure
+    volumes:
+      - .:/app
+    networks:
+      - capital_network
+networks:
+  capital_network:
+    driver: bridge
