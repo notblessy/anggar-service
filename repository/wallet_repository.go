@@ -63,7 +63,7 @@ func (r *walletRepository) FindAll(ctx context.Context, query model.WalletQueryI
 	return wallets, total, nil
 }
 
-func (r *walletRepository) FindByID(ctx context.Context, id int64) (model.Wallet, error) {
+func (r *walletRepository) FindByID(ctx context.Context, id string) (model.Wallet, error) {
 	logger := logrus.WithField("id", id)
 
 	var wallet model.Wallet
@@ -76,7 +76,7 @@ func (r *walletRepository) FindByID(ctx context.Context, id int64) (model.Wallet
 	return wallet, nil
 }
 
-func (r *walletRepository) Update(ctx context.Context, id int64, wallet model.Wallet) error {
+func (r *walletRepository) Update(ctx context.Context, id string, wallet model.Wallet) error {
 	logger := logrus.WithField("id", id).WithField("wallet", utils.Dump(wallet))
 
 	if err := r.db.Model(&model.Wallet{}).Where("id = ?", id).Updates(wallet).Error; err != nil {
@@ -87,7 +87,7 @@ func (r *walletRepository) Update(ctx context.Context, id int64, wallet model.Wa
 	return nil
 }
 
-func (r *walletRepository) Delete(ctx context.Context, id int64) error {
+func (r *walletRepository) Delete(ctx context.Context, id string) error {
 	logger := logrus.WithField("id", id)
 
 	if err := r.db.Delete(&model.Wallet{}, id).Error; err != nil {

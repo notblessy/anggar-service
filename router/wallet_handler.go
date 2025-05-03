@@ -68,7 +68,7 @@ func (h *httpService) createWalletHandler(c echo.Context) error {
 func (h *httpService) findWalletByIDHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
-	id := utils.ParseID(c.Param("id"))
+	id := c.Param("id")
 
 	session, err := authSession(c)
 	if err != nil {
@@ -92,7 +92,7 @@ func (h *httpService) findWalletByIDHandler(c echo.Context) error {
 func (h *httpService) updateWalletHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
-	id := utils.ParseID(c.Param("id"))
+	id := c.Param("id")
 
 	var wallet model.Wallet
 
@@ -121,7 +121,7 @@ func (h *httpService) updateWalletHandler(c echo.Context) error {
 func (h *httpService) deleteWalletHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 
-	id := utils.ParseID(c.Param("id"))
+	id := c.Param("id")
 
 	session, err := authSession(c)
 	if err != nil {

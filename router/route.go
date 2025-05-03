@@ -45,13 +45,14 @@ func (h *httpService) Router(e *echo.Echo) {
 	v1 := e.Group("/api/v1")
 
 	auth := v1.Group("/auth")
-	auth.POST("/login/google", h.loginWithGoogleHandler)
+	auth.POST("/google", h.loginWithGoogleHandler)
 
-	v1.Use(NewJWTMiddleware().ValidateJWT)
-	users := v1.Group("/users")
+	protected := v1.Group("")
+	protected.Use(NewJWTMiddleware().ValidateJWT)
+	users := protected.Group("/users")
 	users.GET("/me", h.profileHandler)
 
-	scope := v1.Group("/scopes")
+	scope := protected.Group("/scopes")
 	scope.GET("/overviews", h.findScopeOverviews)
 	scope.GET("", h.findAllScopeHandler)
 	scope.POST("", h.createScopeHandler)
@@ -59,7 +60,7 @@ func (h *httpService) Router(e *echo.Echo) {
 	scope.PUT("/:id", h.updateScopeHandler)
 	scope.DELETE("/:id", h.deleteScopeHandler)
 
-	wallet := v1.Group("/wallets")
+	wallet := protected.Group("/wallets")
 	wallet.GET("", h.findAllWalletHandler)
 	wallet.POST("", h.createWalletHandler)
 	wallet.GET("/:id", h.findWalletByIDHandler)
@@ -67,7 +68,7 @@ func (h *httpService) Router(e *echo.Echo) {
 	wallet.DELETE("/:id", h.deleteWalletHandler)
 	wallet.GET("/options", h.findWalletOptionHandler)
 
-	transaction := v1.Group("/transactions")
+	transaction := protected.Group("/transactions")
 	transaction.GET("", h.findAllTransactionHandler)
 	transaction.POST("", h.createTransactionHandler)
 	transaction.GET("/:id", h.findTransactionByIDHandler)

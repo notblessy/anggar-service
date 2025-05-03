@@ -24,27 +24,31 @@ type TransactionRepository interface {
 }
 
 type Transaction struct {
-	ID              int64           `json:"id"`
-	UserID          string          `json:"user_id"`
-	WalletID        int64           `json:"wallet_id"`
-	Category        string          `json:"category"`
-	TransactionType string          `json:"transaction_type"`
-	Description     string          `json:"description"`
-	SpentAt         time.Time       `json:"spent_at"`
-	Amount          decimal.Decimal `json:"amount"`
-	CreatedAt       time.Time       `json:"created_at"`
-	UpdatedAt       time.Time       `json:"updated_at"`
-	DeletedAt       gorm.DeletedAt  `json:"deleted_at"`
+	ID                string             `json:"id" gorm:"primaryKey"`
+	UserID            string             `json:"user_id"` // creator
+	WalletID          string             `json:"wallet_id"`
+	Category          string             `json:"category"`
+	TransactionType   string             `json:"transaction_type"` // e.g. "INCOME", "EXPENSE"
+	Description       string             `json:"description"`
+	SpentAt           time.Time          `json:"spent_at"`
+	Amount            decimal.Decimal    `json:"amount" gorm:"type:numeric(20,2)"`
+	IsShared          bool               `json:"is_shared"`
+	CutoffDate        time.Time          `json:"cutoff_date"` // nullable
+	TransactionShares []TransactionShare `json:"transaction_shares" gorm:"foreignKey:TransactionID"`
+
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 }
 
-type TransactionInput struct {
-	UserID      string          `json:"user_id"`
-	WalletID    int64           `json:"wallet_id"`
-	BudgetID    int64           `json:"budget_id"`
-	Category    string          `json:"category"`
-	Description string          `json:"description"`
-	SpentAt     time.Time       `json:"spent_at"`
-	Amount      decimal.Decimal `json:"amount"`
+type TransactionShare struct {
+	ID            int64           `json:"id" gorm:"primaryKey"`
+	TransactionID int64           `json:"transaction_id"`
+	UserID        string          `json:"user_id"`
+	Percentage    float64         `json:"percentage"` // example: 50.00
+	Amount        decimal.Decimal `json:"amount" gorm:"type:numeric(20,2)"`
+	User          User            `json:"user" gorm:"foreignKey:UserID"`
+	Transaction   Transaction     `json:"-" gorm:"foreignKey:TransactionID"` // avoid recursion
 }
 
 type TransactionQueryInput struct {

@@ -5,7 +5,9 @@ go 1.22.7
 toolchain go1.23.6
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
+	github.com/sashabaranov/go-openai v1.39.0
 	google.golang.org/api v0.221.0
 	gorm.io/driver/postgres v1.5.11
 )
@@ -53,6 +55,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
+	github.com/oklog/ulid/v2 v2.1.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.33.0 // indirect
