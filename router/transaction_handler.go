@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/notblessy/anggar-service/model"
 	"github.com/notblessy/anggar-service/utils"
+	"github.com/oklog/ulid/v2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,23 +20,22 @@ func (h *httpService) findAllTransactionHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
 	}
 
-	session, err := authSession(c)
-	if err != nil {
-		logger.Errorf("Error getting session: %v", err)
-		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
-	}
-
-	query.UserID = session.ID
-
 	transactions, total, err := h.transactionRepo.FindAll(c.Request().Context(), query)
 	if err != nil {
 		logger.Errorf("Error getting transactions: %v", err)
 		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
 	}
 
+	results := make(map[string][]model.Transaction)
+
+	for _, tx := range transactions {
+		dateKey := tx.SpentAt.Format("2006-01-02")
+		results[dateKey] = append(results[dateKey], tx)
+	}
+
 	return c.JSON(http.StatusOK, response{
 		Success: true,
-		Data:    withPaging(transactions, total, query.PageOrDefault(), query.SizeOrDefault()),
+		Data:    withPaging(results, total, query.PageOrDefault(), query.SizeOrDefault()),
 	})
 }
 
@@ -56,6 +56,13 @@ func (h *httpService) createTransactionHandler(c echo.Context) error {
 	}
 
 	transaction.UserID = session.ID
+
+	transaction.ID = ulid.Make().String()
+
+	for i := range transaction.TransactionShares {
+		transaction.TransactionShares[i].ID = ulid.Make().String()
+		transaction.TransactionShares[i].TransactionID = transaction.ID
+	}
 
 	err = h.transactionRepo.Create(c.Request().Context(), &transaction)
 	if err != nil {

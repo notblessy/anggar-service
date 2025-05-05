@@ -70,3 +70,21 @@ func (h *httpService) profileHandler(c echo.Context) error {
 		Data:    user,
 	})
 }
+
+func (h *httpService) findUserOptionHandler(c echo.Context) error {
+	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
+
+	options, err := h.userRepo.FindOptions(c.Request().Context())
+	if err != nil {
+		logger.Errorf("Error querying user options: %v", err)
+		return c.JSON(http.StatusInternalServerError, &response{
+			Success: false,
+			Message: "internal server error",
+		})
+	}
+
+	return c.JSON(http.StatusOK, &response{
+		Success: true,
+		Data:    options,
+	})
+}

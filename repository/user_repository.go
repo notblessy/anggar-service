@@ -78,3 +78,17 @@ func (a *userRepository) FindByID(ctx context.Context, id string) (model.User, e
 
 	return user, nil
 }
+
+func (a *userRepository) FindOptions(ctx context.Context) ([]model.UserOption, error) {
+	logger := logrus.WithField("context", ctx)
+
+	var options []model.UserOption
+
+	err := a.db.Table("users").Order("name ASC").Find(&options).Error
+	if err != nil {
+		logger.Errorf("Error querying user options: %v", err)
+		return nil, err
+	}
+
+	return options, nil
+}

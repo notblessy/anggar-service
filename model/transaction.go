@@ -33,8 +33,8 @@ type Transaction struct {
 	SpentAt           time.Time          `json:"spent_at"`
 	Amount            decimal.Decimal    `json:"amount" gorm:"type:numeric(20,2)"`
 	IsShared          bool               `json:"is_shared"`
-	CutoffDate        time.Time          `json:"cutoff_date"` // nullable
 	TransactionShares []TransactionShare `json:"transaction_shares" gorm:"foreignKey:TransactionID"`
+	User              User               `json:"user" gorm:"foreignKey:UserID"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -42,10 +42,10 @@ type Transaction struct {
 }
 
 type TransactionShare struct {
-	ID            int64           `json:"id" gorm:"primaryKey"`
-	TransactionID int64           `json:"transaction_id"`
+	ID            string          `json:"id" gorm:"primaryKey"`
+	TransactionID string          `json:"transaction_id"`
 	UserID        string          `json:"user_id"`
-	Percentage    float64         `json:"percentage"` // example: 50.00
+	Percentage    decimal.Decimal `json:"percentage"` // example: 50.00
 	Amount        decimal.Decimal `json:"amount" gorm:"type:numeric(20,2)"`
 	User          User            `json:"user" gorm:"foreignKey:UserID"`
 	Transaction   Transaction     `json:"-" gorm:"foreignKey:TransactionID"` // avoid recursion

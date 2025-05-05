@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/oklog/ulid/v2"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
@@ -25,6 +26,7 @@ type Wallet struct {
 	CreatedAt time.Time       `json:"created_at"`
 	UpdatedAt time.Time       `json:"updated_at"`
 	DeletedAt gorm.DeletedAt  `json:"deleted_at"`
+	Owner     User            `json:"owner" gorm:"foreignKey:UserID;->"`
 }
 
 type WalletInput struct {
@@ -41,6 +43,7 @@ type WalletQueryInput struct {
 
 func (w *Wallet) InitiateTransactionBalance() Transaction {
 	return Transaction{
+		ID:              ulid.Make().String(),
 		UserID:          w.UserID,
 		WalletID:        w.ID,
 		Amount:          w.Balance,

@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	Authenticate(ctx context.Context, code, requestOrigin string) (User, error)
 	FindByID(ctx context.Context, id string) (User, error)
+	FindOptions(ctx context.Context) ([]UserOption, error)
 }
 
 type User struct {
@@ -43,6 +44,13 @@ type ChangeUsernameRequest struct {
 }
 
 type GoogleAuthInfo struct {
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	Picture string `json:"picture"`
+}
+
+type UserOption struct {
+	ID      string `json:"id"`
 	Email   string `json:"email"`
 	Name    string `json:"name"`
 	Picture string `json:"picture"`

@@ -51,6 +51,7 @@ func (h *httpService) Router(e *echo.Echo) {
 	protected.Use(NewJWTMiddleware().ValidateJWT)
 	users := protected.Group("/users")
 	users.GET("/me", h.profileHandler)
+	users.GET("/options", h.findUserOptionHandler)
 
 	scope := protected.Group("/scopes")
 	scope.GET("/overviews", h.findScopeOverviews)

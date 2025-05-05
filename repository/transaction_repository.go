@@ -33,7 +33,11 @@ func (r *transactionRepository) FindAll(c context.Context, query model.Transacti
 
 	var transactions []model.Transaction
 
-	qb := r.db.WithContext(c).Where("user_id = ?", query.UserID)
+	qb := r.db.WithContext(c).Preload("User").Preload("TransactionShares.User")
+
+	if query.UserID != "" {
+		qb.Where("user_id = ?", query.UserID)
+	}
 
 	if query.Keyword != "" {
 		qb = qb.Where("name ILIKE ?", "%"+query.Keyword+"%")

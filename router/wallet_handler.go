@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/notblessy/anggar-service/model"
 	"github.com/notblessy/anggar-service/utils"
+	"github.com/oklog/ulid/v2"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,14 +19,6 @@ func (h *httpService) findAllWalletHandler(c echo.Context) error {
 		logger.Errorf("Error parsing request: %v", err)
 		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
 	}
-
-	session, err := authSession(c)
-	if err != nil {
-		logger.Errorf("Error getting session: %v", err)
-		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
-	}
-
-	query.UserID = session.ID
 
 	wallets, total, err := h.walletRepo.FindAll(c.Request().Context(), query)
 	if err != nil {
@@ -49,13 +42,7 @@ func (h *httpService) createWalletHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
 	}
 
-	session, err := authSession(c)
-	if err != nil {
-		logger.Errorf("Error getting session: %v", err)
-		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
-	}
-
-	wallet.UserID = session.ID
+	wallet.ID = ulid.Make().String()
 
 	if err := h.walletRepo.Create(c.Request().Context(), &wallet); err != nil {
 		logger.Errorf("Error creating wallet: %v", err)
@@ -101,14 +88,7 @@ func (h *httpService) updateWalletHandler(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
 	}
 
-	session, err := authSession(c)
-	if err != nil {
-		logger.Errorf("Error getting session: %v", err)
-		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
-	}
-
 	wallet.ID = id
-	wallet.UserID = session.ID
 
 	if err := h.walletRepo.Update(c.Request().Context(), id, wallet); err != nil {
 		logger.Errorf("Error updating wallet: %v", err)
@@ -136,7 +116,7 @@ func (h *httpService) deleteWalletHandler(c echo.Context) error {
 	}
 
 	if wallet.UserID != session.ID {
-		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
+		return c.JSON(http.StatusUnauthorized, response{Message: "You are not authorized to delete this wallet"})
 	}
 
 	if err := h.walletRepo.Delete(c.Request().Context(), id); err != nil {

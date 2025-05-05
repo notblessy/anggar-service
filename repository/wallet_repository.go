@@ -43,7 +43,11 @@ func (r *walletRepository) FindAll(ctx context.Context, query model.WalletQueryI
 
 	var wallets []model.Wallet
 
-	qb := r.db.WithContext(ctx).Where("user_id = ?", query.UserID)
+	qb := r.db.WithContext(ctx).Preload("Owner")
+
+	if query.UserID != "" {
+		qb.Where("user_id = ?", query.UserID)
+	}
 
 	if query.Keyword != "" {
 		qb = qb.Where("name ILIKE ?", "%"+query.Keyword+"%")
@@ -68,7 +72,7 @@ func (r *walletRepository) FindByID(ctx context.Context, id string) (model.Walle
 
 	var wallet model.Wallet
 
-	if err := r.db.First(&wallet, id).Error; err != nil {
+	if err := r.db.First(&wallet, "id = ?", id).Error; err != nil {
 		logger.Error(err)
 		return model.Wallet{}, err
 	}
@@ -90,7 +94,16 @@ func (r *walletRepository) Update(ctx context.Context, id string, wallet model.W
 func (r *walletRepository) Delete(ctx context.Context, id string) error {
 	logger := logrus.WithField("id", id)
 
-	if err := r.db.Delete(&model.Wallet{}, id).Error; err != nil {
+	tx := r.db.WithContext(ctx)
+
+	err := tx.Where("wallet_id = ?", id).Delete(&model.Transaction{}).Error
+	if err != nil {
+		logger.Error(err)
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Delete(&model.Wallet{}, "id = ?", id).Error; err != nil {
 		logger.Error(err)
 		return err
 	}
