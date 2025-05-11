@@ -11,8 +11,7 @@ CREATE TABLE transactions (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,
-    CONSTRAINT transactions_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT transactions_wallet_id_fk FOREIGN KEY (wallet_id) REFERENCES wallets(id)
+    CONSTRAINT transactions_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE transaction_shares (

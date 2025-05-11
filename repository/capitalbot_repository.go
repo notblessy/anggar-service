@@ -3,10 +3,15 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/notblessy/anggar-service/model"
+	"github.com/shopspring/decimal"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"gorm.io/gorm"
 )
 
@@ -84,8 +89,8 @@ func (c *capitalBotRepository) handleMessage(ctx context.Context, message *tgbot
 			return
 		}
 
-		email := ""
-		err := c.db.WithContext(ctx).Where("email = ?", message.Text).First(&model.User{}).Error
+		user := model.User{}
+		err := c.db.WithContext(ctx).Where("email = ?", message.Text).First(&user).Error
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				msg := tgbotapi.NewMessage(message.Chat.ID, "Email not found. Please try again.")
@@ -99,7 +104,7 @@ func (c *capitalBotRepository) handleMessage(ctx context.Context, message *tgbot
 			return
 		}
 
-		err = c.db.WithContext(ctx).Model(&model.User{}).Where("email = ?", email).Update("telegram_id", message.Chat.ID).Error
+		err = c.db.WithContext(ctx).Model(&model.User{}).Where("email = ?", user.Email).Debug().Update("telegram_id", message.Chat.ID).Error
 		if err != nil {
 			logger.Error("failed to update user: ", err)
 			msg := tgbotapi.NewMessage(message.Chat.ID, "An error occurred while processing your request.")
@@ -171,27 +176,88 @@ func (c *capitalBotRepository) handleMessage(ctx context.Context, message *tgbot
 
 		transaction.UserID = loggedUser.ID
 
+		err = c.db.WithContext(ctx).Create(&transaction).Error
+		if err != nil {
+			logger.Error("failed to save transaction: ", err)
+			reply := tgbotapi.NewMessage(message.Chat.ID, "An error occurred while saving your transaction.")
+			c.bot.Send(reply)
+			return
+		}
+
 		reply := tgbotapi.NewMessage(message.Chat.ID, replyMessage(transaction))
+		reply.ParseMode = tgbotapi.ModeMarkdownV2
 		c.bot.Send(reply)
 	}
 }
 
 func replyMessage(transaction model.Transaction) string {
-	// Format the reply message with the transaction details
-	// You can customize this format as per your requirements
-	return fmt.Sprintf(
-		"✅ Transaction Recognized:\n"+
-			"Category: %s\n"+
-			"Type: %s\n"+
-			"Description: %s\n"+
-			"Amount: %s\n"+
-			"Spent At: %s\n"+
-			"Shared: %t",
-		transaction.Category,
-		transaction.TransactionType,
-		transaction.Description,
-		transaction.Amount.StringFixed(2),
-		transaction.SpentAt.Format("2006-01-02"),
-		transaction.IsShared,
+	var b strings.Builder
+	titleCaser := cases.Title(language.English)
+
+	b.WriteString("✅ *Transaction Recognized*\n\n")
+	b.WriteString(fmt.Sprintf("*Category:* %s\n", escapeMarkdownV2(titleCaser.String(transaction.Category))))
+	b.WriteString(fmt.Sprintf("*Type:* %s\n", escapeMarkdownV2(titleCaser.String(strings.ToLower(transaction.TransactionType)))))
+	b.WriteString(fmt.Sprintf("*Description:* %s\n", escapeMarkdownV2(transaction.Description)))
+	b.WriteString(fmt.Sprintf("*Amount:* Rp%s\n", escapeMarkdownV2(formatRupiah(transaction.Amount))))
+	b.WriteString(fmt.Sprintf("*Date:* %s\n", escapeMarkdownV2(transaction.SpentAt.Format("2 Jan 2006"))))
+	b.WriteString(fmt.Sprintf("*Shared:* %s\n", map[bool]string{true: "Yes", false: "No"}[transaction.IsShared]))
+
+	if transaction.IsShared && len(transaction.TransactionShares) > 0 {
+		b.WriteString("\n*Breakdown:*\n")
+		for _, share := range transaction.TransactionShares {
+			b.WriteString(fmt.Sprintf("• %s: %s%% — Rp%s\n",
+				escapeMarkdownV2(share.User.Name),
+				escapeMarkdownV2(share.Percentage.StringFixed(2)),
+				escapeMarkdownV2(share.Amount.StringFixed(2)),
+			))
+		}
+	}
+
+	return b.String()
+}
+
+func escapeMarkdownV2(text string) string {
+	replacer := strings.NewReplacer(
+		"_", "\\_",
+		"*", "\\*",
+		"[", "\\[",
+		"]", "\\]",
+		"(", "\\(",
+		")", "\\)",
+		"~", "\\~",
+		"`", "\\`",
+		">", "\\>",
+		"#", "\\#",
+		"+", "\\+",
+		"-", "\\-",
+		"=", "\\=",
+		"|", "\\|",
+		"{", "\\{",
+		"}", "\\}",
+		".", "\\.",
+		"!", "\\!",
 	)
+	return replacer.Replace(text)
+}
+
+func formatRupiah(amount decimal.Decimal) string {
+	// Get integer part
+	intPart := amount.IntPart()
+
+	// Format with dot as thousand separator
+	formatted := strconv.FormatInt(intPart, 10)
+	n := len(formatted)
+	if n <= 3 {
+		return "Rp" + formatted
+	}
+
+	var result []string
+	for i := n; i > 0; i -= 3 {
+		start := i - 3
+		if start < 0 {
+			start = 0
+		}
+		result = append([]string{formatted[start:i]}, result...)
+	}
+	return "Rp" + strings.Join(result, ".")
 }

@@ -87,6 +87,11 @@ func main() {
 		log.Println("Bot listener started")
 
 		if err := capitalBotRepo.ListenMessage(ctx); err != nil {
+			if err == context.Canceled {
+				log.Println("Bot listener canceled")
+				return
+			}
+
 			log.Printf("Bot listener error: %v", err)
 		}
 	}()
