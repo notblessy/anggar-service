@@ -184,7 +184,17 @@ func (c *capitalBotRepository) handleMessage(ctx context.Context, message *tgbot
 			return
 		}
 
-		reply := tgbotapi.NewMessage(message.Chat.ID, replyMessage(transaction))
+		transactionIndex := model.Transaction{}
+
+		err = c.db.WithContext(ctx).Where("id = ?", transaction.ID).Preload("TransactionShares.User").First(&transactionIndex).Error
+		if err != nil {
+			logger.Error("failed to find transaction: ", err)
+			reply := tgbotapi.NewMessage(message.Chat.ID, "An error occurred while retrieving your transaction.")
+			c.bot.Send(reply)
+			return
+		}
+
+		reply := tgbotapi.NewMessage(message.Chat.ID, replyMessage(transactionIndex))
 		reply.ParseMode = tgbotapi.ModeMarkdownV2
 		c.bot.Send(reply)
 	}
@@ -198,18 +208,25 @@ func replyMessage(transaction model.Transaction) string {
 	b.WriteString(fmt.Sprintf("*Category:* %s\n", escapeMarkdownV2(titleCaser.String(transaction.Category))))
 	b.WriteString(fmt.Sprintf("*Type:* %s\n", escapeMarkdownV2(titleCaser.String(strings.ToLower(transaction.TransactionType)))))
 	b.WriteString(fmt.Sprintf("*Description:* %s\n", escapeMarkdownV2(transaction.Description)))
-	b.WriteString(fmt.Sprintf("*Amount:* Rp%s\n", escapeMarkdownV2(formatRupiah(transaction.Amount))))
+	b.WriteString(fmt.Sprintf("*Amount:* %s\n", escapeMarkdownV2(formatRupiah(transaction.Amount))))
 	b.WriteString(fmt.Sprintf("*Date:* %s\n", escapeMarkdownV2(transaction.SpentAt.Format("2 Jan 2006"))))
 	b.WriteString(fmt.Sprintf("*Shared:* %s\n", map[bool]string{true: "Yes", false: "No"}[transaction.IsShared]))
 
 	if transaction.IsShared && len(transaction.TransactionShares) > 0 {
 		b.WriteString("\n*Breakdown:*\n")
 		for _, share := range transaction.TransactionShares {
-			b.WriteString(fmt.Sprintf("• %s: %s%% — Rp%s\n",
-				escapeMarkdownV2(share.User.Name),
-				escapeMarkdownV2(share.Percentage.StringFixed(2)),
-				escapeMarkdownV2(share.Amount.StringFixed(2)),
-			))
+			if share.Percentage.GreaterThan(decimal.Zero) {
+				b.WriteString(fmt.Sprintf("• %s: %s%% — %s\n",
+					escapeMarkdownV2(share.User.Name),
+					escapeMarkdownV2(share.Percentage.StringFixed(2)),
+					escapeMarkdownV2(formatRupiah(share.Amount)),
+				))
+			} else {
+				b.WriteString(fmt.Sprintf("• %s: %s\n",
+					escapeMarkdownV2(share.User.Name),
+					escapeMarkdownV2(formatRupiah(share.Amount)),
+				))
+			}
 		}
 	}
 
