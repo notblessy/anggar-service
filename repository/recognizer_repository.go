@@ -16,13 +16,13 @@ type recognizerRepository struct {
 	openAi *openai.Client
 }
 
-func NewHandler(openAi *openai.Client) *recognizerRepository {
+func NewHandler(openAi *openai.Client) model.RecognizerRepository {
 	return &recognizerRepository{
 		openAi: openAi,
 	}
 }
 
-func (r *recognizerRepository) RecognizeTransaction(ctx context.Context, text string) (model.Transaction, error) {
+func (r *recognizerRepository) RecognizeTransaction(ctx context.Context, withPrompt, text string) (model.Transaction, error) {
 	logger := logrus.WithContext(ctx).WithField("text", text)
 
 	resp, err := r.openAi.CreateChatCompletion(
@@ -31,8 +31,8 @@ func (r *recognizerRepository) RecognizeTransaction(ctx context.Context, text st
 			Model: openai.GPT3Dot5Turbo,
 			Messages: []openai.ChatCompletionMessage{
 				{
-					Role: openai.ChatMessageRoleSystem,
-					// Content: systemPrompt,
+					Role:    openai.ChatMessageRoleSystem,
+					Content: withPrompt,
 				},
 				{
 					Role:    openai.ChatMessageRoleUser,
@@ -41,6 +41,11 @@ func (r *recognizerRepository) RecognizeTransaction(ctx context.Context, text st
 			},
 		},
 	)
+
+	if err != nil {
+		logger.Error(fmt.Errorf("failed to create chat completion: %w", err))
+		return model.Transaction{}, err
+	}
 
 	var recognized model.Transaction
 

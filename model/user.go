@@ -14,15 +14,16 @@ type UserRepository interface {
 }
 
 type User struct {
-	ID        string         `json:"id"`
-	Email     string         `json:"email"`
-	Name      string         `json:"name"`
-	Password  string         `json:"password,omitempty"`
-	Picture   string         `json:"picture"`
-	Role      string         `json:"role"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+	ID         string         `json:"id"`
+	Email      string         `json:"email"`
+	Name       string         `json:"name"`
+	TelegramID int64          `json:"telegram_id"`
+	Password   string         `json:"password,omitempty"`
+	Picture    string         `json:"picture"`
+	Role       string         `json:"role"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
 }
 
 func (u *User) OmitPassword() {

@@ -45,7 +45,6 @@ func (w *Wallet) InitiateTransactionBalance() Transaction {
 	return Transaction{
 		ID:              ulid.Make().String(),
 		UserID:          w.UserID,
-		WalletID:        w.ID,
 		Amount:          w.Balance,
 		Category:        CategoryOpname,
 		TransactionType: TransactionTypeIncome,

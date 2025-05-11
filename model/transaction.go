@@ -26,7 +26,6 @@ type TransactionRepository interface {
 type Transaction struct {
 	ID                string             `json:"id" gorm:"primaryKey"`
 	UserID            string             `json:"user_id"` // creator
-	WalletID          string             `json:"wallet_id"`
 	Category          string             `json:"category"`
 	TransactionType   string             `json:"transaction_type"` // e.g. "INCOME", "EXPENSE"
 	Description       string             `json:"description"`

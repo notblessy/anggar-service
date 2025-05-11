@@ -5,6 +5,7 @@ CREATE TABLE users (
     name VARCHAR(150),
     password VARCHAR(150),
     picture TEXT,
+    telegram_id INT,
     role VARCHAR(32) NOT NULL DEFAULT 'USER',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

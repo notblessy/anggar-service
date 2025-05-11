@@ -2,11 +2,15 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"strings"
 
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/notblessy/anggar-service/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/utils"
 )
 
 type userRepository struct {
@@ -38,7 +42,17 @@ func (a *userRepository) Authenticate(ctx context.Context, code, requestOrigin s
 		return model.User{}, err
 	}
 
+	validEmails := os.Getenv("VALID_EMAILS")
+	if validEmails != "" {
+		validEmailList := strings.Split(validEmails, ",")
+		if !utils.Contains(validEmailList, auth.Email) {
+			logger.Errorf("Email %s is not in the list of valid emails", auth.Email)
+			return model.User{}, fmt.Errorf("email %s is not in the list of valid emails", auth.Email)
+		}
+	}
+
 	var authUser model.User
+
 	err = a.db.Where("email = ?", auth.Email).First(&authUser).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		logger.Errorf("Error querying user: %v", err)

@@ -2,7 +2,6 @@
 CREATE TABLE transactions (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
-    wallet_id VARCHAR(255) NOT NULL,
     category VARCHAR(255) NOT NULL,
     transaction_type VARCHAR(32) NOT NULL,
     description TEXT,
