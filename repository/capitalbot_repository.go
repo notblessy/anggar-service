@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/notblessy/anggar-service/model"
@@ -175,6 +176,7 @@ func (c *capitalBotRepository) handleMessage(ctx context.Context, message *tgbot
 		}
 
 		transaction.UserID = loggedUser.ID
+		transaction.SpentAt = time.Now()
 
 		err = c.db.WithContext(ctx).Create(&transaction).Error
 		if err != nil {
