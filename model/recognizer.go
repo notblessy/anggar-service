@@ -20,7 +20,7 @@ func SystemPrompt(meID, sharedID string) string {
 			"wallet_name": "string",               // if not mentioned, return "default"
 			"user_id": "string"                      // if not mentioned, return "self"
 			"is_shared": true | false,
-			"category": "string"                  // detect category from description
+			"category": "string"                  // detect category from description but only in this value: utilities, transportation, home, shopping, groceries, entertainment, food, other. if unable to detect, return "other"
 			"spent_at": "2023-10-01T00:00:00Z" // if not mentioned, return current time
 		}
 
@@ -29,7 +29,7 @@ func SystemPrompt(meID, sharedID string) string {
 		also assume the me name with %s ID and shared name with %s ID
 		amount might not be percentage, if amount has %%, then it's percentage and calculate the shared amount based on amount transaction with the percentage.
 		For example:
-		- "makan ayam 50000 (shelly 50%%, blessy 50%%)" will return 25000 for me and 25000 for shared
+		- "makan ayam 50000 (me 50%%, sharedName 50%%)" will return 25000 for me and 25000 for shared
 		if the message doesn't contain percentage, then just split with the exact amount, and find the percentage based on the amount.
 		also return json with transaction_shares array of objects with the following format:
 		{
