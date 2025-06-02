@@ -206,6 +206,12 @@ func replyMessage(transaction model.Transaction) string {
 	var b strings.Builder
 	titleCaser := cases.Title(language.English)
 
+	if value, ok := model.CategoryMapper[transaction.Category]; !ok {
+		transaction.Category = "Other"
+	} else {
+		transaction.Category = value
+	}
+
 	b.WriteString("✅ *Transaction Recognized*\n\n")
 	b.WriteString(fmt.Sprintf("*Category:* %s\n", escapeMarkdownV2(titleCaser.String(transaction.Category))))
 	b.WriteString(fmt.Sprintf("*Type:* %s\n", escapeMarkdownV2(titleCaser.String(strings.ToLower(transaction.TransactionType)))))

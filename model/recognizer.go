@@ -9,6 +9,17 @@ type RecognizerRepository interface {
 	RecognizeTransaction(ctx context.Context, prompt, text string) (Transaction, error)
 }
 
+var CategoryMapper = map[string]string{
+	"utilities":      "Utilities",
+	"transportation": "Transportation",
+	"home":           "Home",
+	"shopping":       "Shopping",
+	"groceries":      "Groceries",
+	"entertainment":  "Entertainment",
+	"food":           "Food & Beverage",
+	"other":          "Other",
+}
+
 func SystemPrompt(meID, sharedID string) string {
 	return fmt.Sprintf(`
 		You are a finance message parser. Given a short, natural language message like "makan ayam 50000" or "uang freelance 200000", respond with a structured JSON that fits this format:
