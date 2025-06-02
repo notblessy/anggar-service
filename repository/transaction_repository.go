@@ -101,7 +101,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Select("SUM(amount) AS total_income").
 		Where("user_id = ? AND transaction_type = ?", query.UserID, model.TransactionTypeIncome).
 		Where("spent_at BETWEEN ? AND ?", query.StartDate, query.EndDate).
-		Scan(&summary).Error; err != nil {
+		Scan(&summary.TotalExpense).Error; err != nil {
 		logger.Error(err)
 		return model.Summary{}, err
 	}
