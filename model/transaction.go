@@ -21,6 +21,8 @@ type TransactionRepository interface {
 	FindByID(c context.Context, id int64) (Transaction, error)
 	Update(c context.Context, id int64, transaction Transaction) error
 	Delete(c context.Context, id int64) error
+
+	CurrentMonthSummary(c context.Context, query SummaryQueryInput) (Summary, error)
 }
 
 type Transaction struct {
@@ -54,4 +56,20 @@ type TransactionQueryInput struct {
 	Keyword string `query:"keyword"`
 	UserID  string `query:"user_id"`
 	PaginatedRequest
+}
+
+type SummaryQueryInput struct {
+	UserID    string `query:"user_id"`
+	StartDate string `query:"start_date"` // format: "2006-01-02"
+	EndDate   string `query:"end_date"`   // format: "2006-01-02"
+}
+
+type Summary struct {
+	TotalExpense decimal.Decimal `json:"totalExpense"`
+	TotalSplited SplitedSummary  `json:"totalSplited"`
+}
+
+type SplitedSummary struct {
+	Me     decimal.Decimal `json:"me"`
+	Shared decimal.Decimal `json:"shared"`
 }

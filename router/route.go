@@ -75,6 +75,7 @@ func (h *httpService) Router(e *echo.Echo) {
 	transaction.GET("/:id", h.findTransactionByIDHandler)
 	transaction.PUT("/:id", h.updateTransactionHandler)
 	transaction.DELETE("/:id", h.deleteTransactionHandler)
+	transaction.GET("/summary", h.currentMonthSummaryHandler)
 }
 
 func (h *httpService) ping(c echo.Context) error {

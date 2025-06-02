@@ -90,3 +90,56 @@ func (r *transactionRepository) Delete(c context.Context, id int64) error {
 
 	return nil
 }
+
+func (r *transactionRepository) CurrentMonthSummary(c context.Context, query model.SummaryQueryInput) (model.Summary, error) {
+	logger := logrus.WithField("query", utils.Dump(query))
+
+	var summary model.Summary
+
+	if err := r.db.WithContext(c).
+		Model(&model.Transaction{}).
+		Select("SUM(amount) AS total_income").
+		Where("user_id = ? AND transaction_type = ?", query.UserID, model.TransactionTypeIncome).
+		Where("spent_at BETWEEN ? AND ?", query.StartDate, query.EndDate).
+		Scan(&summary).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	transactionIds := []string{}
+
+	if err := r.db.WithContext(c).
+		Model(&model.Transaction{}).
+		Select("id").
+		Where("user_id = ? AND transaction_type = ?", query.UserID, model.TransactionTypeExpense).
+		Where("spent_at BETWEEN ? AND ?", query.StartDate, query.EndDate).
+		Find(&transactionIds).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	if err := r.db.WithContext(c).
+		Model(&model.TransactionShare{}).
+		Select("SUM(amount) AS total_spent").
+		Where("transaction_id IN ?", transactionIds).
+		Where("user_id = ?", query.UserID).
+		Where("spent_at BETWEEN ? AND ?", query.StartDate, query.EndDate).
+		Scan(&summary.TotalSplited.Me).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	if err := r.db.WithContext(c).
+		Model(&model.TransactionShare{}).
+		Select("SUM(amount) AS total_spent").
+		Where("transaction_id IN ?", transactionIds).
+		Where("user_id <> ?", query.UserID).
+		Where("spent_at BETWEEN ? AND ?", query.StartDate, query.EndDate).
+		Scan(&summary.TotalSplited.Shared).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	return summary, nil
+
+}

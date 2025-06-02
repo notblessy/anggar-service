@@ -145,3 +145,33 @@ func (h *httpService) deleteTransactionHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response{Success: true})
 }
+
+func (h *httpService) currentMonthSummaryHandler(c echo.Context) error {
+	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
+
+	session, err := authSession(c)
+	if err != nil {
+		logger.Errorf("Error getting session: %v", err)
+		return c.JSON(http.StatusUnauthorized, response{Message: "unauthorized"})
+	}
+
+	var query model.SummaryQueryInput
+
+	if err := c.Bind(&query); err != nil {
+		logger.Errorf("Error parsing request: %v", err)
+		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
+	}
+
+	query.UserID = session.ID
+
+	summary, err := h.transactionRepo.CurrentMonthSummary(c.Request().Context(), query)
+	if err != nil {
+		logger.Errorf("Error getting current month summary: %v", err)
+		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, response{
+		Success: true,
+		Data:    summary,
+	})
+}
