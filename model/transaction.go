@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	TransactionTypeIncome  = "income"
-	TransactionTypeExpense = "expense"
+	TransactionTypeIncome  = "INCOME"
+	TransactionTypeExpense = "EXPENSE"
 
 	CategoryOpname = "opname"
 )
