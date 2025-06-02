@@ -100,7 +100,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Model(&model.Transaction{}).
 		Select("COALESCE(SUM(amount), 0) AS total_expense").
 		Where("user_id = ? AND transaction_type = ?", query.UserID, model.TransactionTypeIncome).
-		Where("spent_at BETWEEN ? AND ?", query.StartDate, query.EndDate).
+		Where("DATE(spent_at) BETWEEN ? AND ?", query.StartDate, query.EndDate).
 		Scan(&summary.TotalExpense).Error; err != nil {
 		logger.Error(err)
 		return model.Summary{}, err
@@ -112,7 +112,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Model(&model.Transaction{}).
 		Select("id").
 		Where("user_id = ? AND transaction_type = ?", query.UserID, model.TransactionTypeExpense).
-		Where("spent_at BETWEEN ? AND ?", query.StartDate, query.EndDate).
+		Where("DATE(spent_at) BETWEEN ? AND ?", query.StartDate, query.EndDate).
 		Find(&transactionIds).Error; err != nil {
 		logger.Error(err)
 		return model.Summary{}, err
