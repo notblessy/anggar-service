@@ -124,7 +124,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Model(&model.Transaction{}).
 		Select("id").
 		Where("transaction_type = ?", model.TransactionTypeExpense).
-		Where("shared = ?", true).
+		Where("is_shared = ?", true).
 		Where("DATE(spent_at) BETWEEN ? AND ?", query.StartDate, query.EndDate).
 		Find(&transactionIds).Error; err != nil {
 		logger.Error(err)
