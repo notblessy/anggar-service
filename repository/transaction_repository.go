@@ -186,5 +186,21 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		return model.Summary{}, err
 	}
 
+	if err := r.db.WithContext(c).
+		Model(&model.User{}).
+		Where("id = ?", query.UserID).
+		First(&summary.Me).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	if err := r.db.WithContext(c).
+		Model(&model.User{}).
+		Where("id <> ?", query.UserID).
+		First(&summary.Other).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
 	return summary, nil
 }

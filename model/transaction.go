@@ -68,6 +68,8 @@ type Summary struct {
 	MeExpense    decimal.Decimal     `json:"total_expense"`
 	OtherExpense decimal.Decimal     `json:"other_expense"`
 	Splitted     SplittedTransaction `json:"total_splited"`
+	Me           User                `json:"me"`
+	Other        User                `json:"other"`
 }
 
 type SplittedTransaction struct {
