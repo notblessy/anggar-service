@@ -124,6 +124,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Model(&model.Transaction{}).
 		Select("id").
 		Where("transaction_type = ?", model.TransactionTypeExpense).
+		Where("user_id = ?", query.UserID).
 		Where("is_shared = ?", true).
 		Where("DATE(spent_at) BETWEEN ? AND ?", query.StartDate, query.EndDate).
 		Find(&transactionIds).Error; err != nil {
@@ -136,7 +137,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Select("COALESCE(SUM(amount), 0) AS me").
 		Where("transaction_id IN ?", transactionIds).
 		Where("user_id = ?", query.UserID).
-		Scan(&summary.TotalSplited.Me).Error; err != nil {
+		Scan(&summary.Splitted.Me.Me).Error; err != nil {
 		logger.Error(err)
 		return model.Summary{}, err
 	}
@@ -146,7 +147,41 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Select("COALESCE(SUM(amount), 0) AS shared").
 		Where("transaction_id IN ?", transactionIds).
 		Where("user_id <> ?", query.UserID).
-		Scan(&summary.TotalSplited.Shared).Error; err != nil {
+		Scan(&summary.Splitted.Me.Shared).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	otherTransactionIds := []string{}
+
+	if err := r.db.WithContext(c).
+		Model(&model.Transaction{}).
+		Select("id").
+		Where("transaction_type = ?", model.TransactionTypeExpense).
+		Where("user_id <> ?", query.UserID).
+		Where("is_shared = ?", true).
+		Where("DATE(spent_at) BETWEEN ? AND ?", query.StartDate, query.EndDate).
+		Find(&otherTransactionIds).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	if err := r.db.WithContext(c).
+		Model(&model.TransactionShare{}).
+		Select("COALESCE(SUM(amount), 0) AS me").
+		Where("transaction_id IN ?", otherTransactionIds).
+		Where("user_id = ?", query.UserID).
+		Scan(&summary.Splitted.Other.Me).Error; err != nil {
+		logger.Error(err)
+		return model.Summary{}, err
+	}
+
+	if err := r.db.WithContext(c).
+		Model(&model.TransactionShare{}).
+		Select("COALESCE(SUM(amount), 0) AS shared").
+		Where("transaction_id IN ?", otherTransactionIds).
+		Where("user_id <> ?", query.UserID).
+		Scan(&summary.Splitted.Other.Shared).Error; err != nil {
 		logger.Error(err)
 		return model.Summary{}, err
 	}

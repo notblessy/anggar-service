@@ -65,9 +65,14 @@ type SummaryQueryInput struct {
 }
 
 type Summary struct {
-	MeExpense    decimal.Decimal `json:"total_expense"`
-	OtherExpense decimal.Decimal `json:"other_expense"`
-	TotalSplited SplitedSummary  `json:"total_splited"`
+	MeExpense    decimal.Decimal     `json:"total_expense"`
+	OtherExpense decimal.Decimal     `json:"other_expense"`
+	Splitted     SplittedTransaction `json:"total_splited"`
+}
+
+type SplittedTransaction struct {
+	Me    SplitedSummary `json:"me"`
+	Other SplitedSummary `json:"other"`
 }
 
 type SplitedSummary struct {
