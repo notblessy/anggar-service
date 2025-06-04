@@ -170,7 +170,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Model(&model.TransactionShare{}).
 		Select("COALESCE(SUM(amount), 0) AS me").
 		Where("transaction_id IN ?", otherTransactionIds).
-		Where("user_id = ?", query.UserID).
+		Where("user_id <> ?", query.UserID).
 		Scan(&summary.Splitted.Other.Me).Error; err != nil {
 		logger.Error(err)
 		return model.Summary{}, err
@@ -180,7 +180,7 @@ func (r *transactionRepository) CurrentMonthSummary(c context.Context, query mod
 		Model(&model.TransactionShare{}).
 		Select("COALESCE(SUM(amount), 0) AS shared").
 		Where("transaction_id IN ?", otherTransactionIds).
-		Where("user_id <> ?", query.UserID).
+		Where("user_id = ?", query.UserID).
 		Scan(&summary.Splitted.Other.Shared).Error; err != nil {
 		logger.Error(err)
 		return model.Summary{}, err
