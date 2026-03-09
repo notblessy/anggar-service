@@ -146,6 +146,38 @@ func (h *httpService) deleteTransactionHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, response{Success: true})
 }
 
+func (h *httpService) updateShareHandler(c echo.Context) error {
+	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
+
+	id := c.Param("id")
+
+	var share model.TransactionShare
+	if err := c.Bind(&share); err != nil {
+		logger.Errorf("Error parsing request: %v", err)
+		return c.JSON(http.StatusBadRequest, response{Message: err.Error()})
+	}
+
+	if err := h.transactionRepo.UpdateShare(c.Request().Context(), id, share); err != nil {
+		logger.Errorf("Error updating share: %v", err)
+		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, response{Success: true, Data: share})
+}
+
+func (h *httpService) deleteShareHandler(c echo.Context) error {
+	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
+
+	id := c.Param("id")
+
+	if err := h.transactionRepo.DeleteShare(c.Request().Context(), id); err != nil {
+		logger.Errorf("Error deleting share: %v", err)
+		return c.JSON(http.StatusInternalServerError, response{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, response{Success: true})
+}
+
 func (h *httpService) currentMonthSummaryHandler(c echo.Context) error {
 	logger := logrus.WithField("ctx", utils.Dump(c.Request().Context()))
 

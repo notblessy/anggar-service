@@ -22,6 +22,9 @@ type TransactionRepository interface {
 	Update(c context.Context, id int64, transaction Transaction) error
 	Delete(c context.Context, id int64) error
 
+	UpdateShare(c context.Context, id string, share TransactionShare) error
+	DeleteShare(c context.Context, id string) error
+
 	CurrentMonthSummary(c context.Context, query SummaryQueryInput) (Summary, error)
 }
 
@@ -53,8 +56,11 @@ type TransactionShare struct {
 }
 
 type TransactionQueryInput struct {
-	Keyword string `query:"keyword"`
-	UserID  string `query:"user_id"`
+	Keyword   string `query:"keyword"`
+	UserID    string `query:"user_id"`
+	StartDate string `query:"start_date"`
+	EndDate   string `query:"end_date"`
+	Filter    string `query:"filter"` // "shared", "personal", or empty for all
 	PaginatedRequest
 }
 

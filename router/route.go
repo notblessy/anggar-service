@@ -76,6 +76,10 @@ func (h *httpService) Router(e *echo.Echo) {
 	transaction.PUT("/:id", h.updateTransactionHandler)
 	transaction.DELETE("/:id", h.deleteTransactionHandler)
 	transaction.GET("/summary", h.currentMonthSummaryHandler)
+
+	shares := protected.Group("/transaction-shares")
+	shares.PUT("/:id", h.updateShareHandler)
+	shares.DELETE("/:id", h.deleteShareHandler)
 }
 
 func (h *httpService) ping(c echo.Context) error {

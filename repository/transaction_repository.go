@@ -36,11 +36,21 @@ func (r *transactionRepository) FindAll(c context.Context, query model.Transacti
 	qb := r.db.WithContext(c).Preload("User").Preload("TransactionShares.User")
 
 	if query.UserID != "" {
-		qb.Where("user_id = ?", query.UserID)
+		qb = qb.Where("user_id = ?", query.UserID)
 	}
 
 	if query.Keyword != "" {
-		qb = qb.Where("name ILIKE ?", "%"+query.Keyword+"%")
+		qb = qb.Where("description ILIKE ?", "%"+query.Keyword+"%")
+	}
+
+	if query.StartDate != "" && query.EndDate != "" {
+		qb = qb.Where("DATE(spent_at) BETWEEN ? AND ?", query.StartDate, query.EndDate)
+	}
+
+	if query.Filter == "shared" {
+		qb = qb.Where("is_shared = ?", true)
+	} else if query.Filter == "personal" {
+		qb = qb.Where("is_shared = ?", false)
 	}
 
 	var total int64
@@ -84,6 +94,28 @@ func (r *transactionRepository) Delete(c context.Context, id int64) error {
 	logger := logrus.WithField("id", id)
 
 	if err := r.db.WithContext(c).Delete(&model.Transaction{}, id).Error; err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *transactionRepository) UpdateShare(c context.Context, id string, share model.TransactionShare) error {
+	logger := logrus.WithField("share", utils.Dump(share))
+
+	if err := r.db.WithContext(c).Model(&model.TransactionShare{}).Where("id = ?", id).Updates(&share).Error; err != nil {
+		logger.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *transactionRepository) DeleteShare(c context.Context, id string) error {
+	logger := logrus.WithField("id", id)
+
+	if err := r.db.WithContext(c).Where("id = ?", id).Delete(&model.TransactionShare{}).Error; err != nil {
 		logger.Error(err)
 		return err
 	}
